@@ -48,14 +48,14 @@ class SettingsTab extends React.Component {
         
   }
   initAuthentication = () => {
-    window.open("http://localhost:8080/initauth", "_blank");
+    window.open("https://https://abskrt-backend.azurewebsites.net/initauth", "_blank");
   }
   componentDidMount() {
     this.getAuthData();
   }
   
   getAuthData = () => {
-    fetch('http://localhost:8080/get-auth-data')
+    fetch('https://https://abskrt-backend.azurewebsites.net/get-auth-data')
           .then(results => {
             return results.json();
           }).then(data => {
@@ -86,7 +86,7 @@ class SettingsTab extends React.Component {
           margin="normal"
           variant="outlined"
           InputLabelProps={{
-            shrink: true,
+          shrink: true,
           }}
           />
         <TextField
