@@ -61,7 +61,7 @@ const styles = theme => ({
 class HistoricalTab extends React.Component {
   constructor(){
       super()
-      this.state = {brick_size:10,ticker_name:"AXISBANK",start_date:"2017-05-24",end_date:"2017-05-29",data:[],trans:[],profit:0};
+      this.state = {brick_size:4,ticker_name:"BANKNIFTY",start_date:"2017-05-24",end_date:"2017-05-29",data:[],trans:[],profit:0};
       this.handleBSChange = this.handleBSChange.bind(this);
       this.handleDateChange = this.handleDateChange.bind(this);
       this.handleTNChange = this.handleTNChange.bind(this);
@@ -73,7 +73,7 @@ class HistoricalTab extends React.Component {
 
   getStompClient = () =>{
     if(this.stompClient== null){
-      let socket = new SockJS("http://localhost:8080/gs-guide-websocket");
+      let socket = new SockJS("https://abskrt-backend.azurewebsites.net/gs-guide-websocket");
       this.stompClient= Stomp.over(socket);
     }
     return this.stompClient;
