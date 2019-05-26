@@ -19,6 +19,7 @@ import { Route, Link, BrowserRouter as Router,Switch } from 'react-router-dom'
 import RealtimeTab from '../realtime_tab/RealtimeTab';
 import SettingsTab from '../settings_tab/settingsTab';
 import HistoricalTab from '../historical_tab/HistoricalTab';
+import DBViewerTab from '../DBViewer/DBViewerTab';
 const drawerWidth = 240;
 
 const styles = theme => ({
@@ -164,6 +165,7 @@ class Dashboard extends React.Component {
             <Route exact path="/" component={RealtimeTab} />
             <Route exact path="/settings" component={SettingsTab} />
             <Route exact path="/historical" component={HistoricalTab} />
+            <Route exact path="/DB" component={DBViewerTab} />
         </Switch>
         </Router>
       </div>

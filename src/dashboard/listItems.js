@@ -29,12 +29,14 @@ export const mainListItems = (
       <ListItemText primary="Historical" />
     </ListItem>
     </Link>
+    <Link to="/DB">
     <ListItem button>
       <ListItemIcon>
         <BarChartIcon />
       </ListItemIcon>
       <ListItemText primary="Bar Replay" />
     </ListItem>
+    </Link>
     <ListItem button>
       <ListItemIcon>
         <BuildIcon />
