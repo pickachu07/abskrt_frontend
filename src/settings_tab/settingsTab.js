@@ -48,14 +48,14 @@ class SettingsTab extends React.Component {
         
   }
   initAuthentication = () => {
-    window.open("https://abskrt-backend.azurewebsites.net/initauth", "_blank");
+    window.open("http://localhost:8080/initauth", "_blank");
   }
   componentDidMount() {
     this.getAuthData();
   }
   
   getAuthData = () => {
-    fetch('https://abskrt-backend.azurewebsites.net/get-auth-data')
+    fetch('http://localhost:8080/get-auth-data')
           .then(results => {
             return results.json();
           }).then(data => {

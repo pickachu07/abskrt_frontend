@@ -73,7 +73,7 @@ class HistoricalTab extends React.Component {
 
   getStompClient = () =>{
     if(this.stompClient== null){
-      let socket = new SockJS("https://abskrt-backend.azurewebsites.net/gs-guide-websocket");
+      let socket = new SockJS("http://localhost:8080/gs-guide-websocket");
       this.stompClient= Stomp.over(socket);
     }
     return this.stompClient;
