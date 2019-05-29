@@ -2,9 +2,7 @@ import React from 'react'
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
-import { FormHelperText } from '@material-ui/core';
 import TextField from '@material-ui/core/TextField';
-import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
 
 const styles = theme => ({
@@ -120,11 +118,6 @@ class SettingsTab extends React.Component {
         />
         <div className={classes.root}>
           <Grid container spacing={24}>
-            {/* <Grid item xs>
-                <Button variant="contained" className={classes.button} >
-                  Save
-                </Button>
-            </Grid> */}
             <Grid item xs>  
               <Button variant="contained" color="primary" className={classes.button} onClick={this.initAuthentication}>
                 Generate Token
