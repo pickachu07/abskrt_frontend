@@ -3,18 +3,43 @@ import ChartComponent from "./ChartComponent";
 import Avatar from '@material-ui/core/Avatar';
 import Chip from '@material-ui/core/Chip';
 import FaceIcon from '@material-ui/icons/Face';
+import TextField from '@material-ui/core/TextField';
+import Button from '@material-ui/core/Button';
+import Grid from '@material-ui/core/Grid';
 import { withStyles } from '@material-ui/core/styles';
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
 const styles = theme =>({
-  
+  root: {
+    flexGrow: 1,
+  },
+  content: {
+    flexGrow: 1,
+    padding: theme.spacing.unit * 3,
+    height: '100vh',
+    overflow: 'auto',
+    width:'100%'
+  },
+  textField: {
+    marginLeft: theme.spacing.unit* 2,
+    marginRight: theme.spacing.unit* 2,
+  },
+  fullWidth : {
+    marginLeft : theme.spacing.unit*3, 
+    marginRight : theme.spacing.unit*3, 
+    width:'90%'
+  },
+  button: {
+    marginLeft : theme.spacing.unit*3,
+    width:'90%'
+  },
 });
 
 class RealtimeRenkoContainer extends React.Component {
   
   constructor(){
     super();
-    this.state = {ticker: 'SBIN', brick_size : 1000, streamingStarted : false,connected:false,data:[]};
+    this.state = {ticker: 'NIFTY_BANK', brick_size : 4, streamingStarted : false,connected:false,data:[]};
 
     this.handleTChange = this.handleTChange.bind(this);
     this.handleBSChange = this.handleBSChange.bind(this);
@@ -34,14 +59,28 @@ class RealtimeRenkoContainer extends React.Component {
   }
 
   handleSubmit(event) {
-    this.getStompClient().send("/app/start_streaming", {}, JSON.stringify({'brick_size' : this.state.brick_size,'ticker_name': this.state.ticker}))
-    this.setState({streamingStarted: true});
+    //this.getStompClient().send("/app/start_streaming", {}, JSON.stringify({'brick_size' : this.state.brick_size,'ticker_name': this.state.ticker}))
+    //this.setState({streamingStarted: true});
+    fetch('http://localhost:8080/subscribe?ticker='+this.state.ticker_name+'&brick_size='+this.state.brick_size)
+          .then(results => {
+            return results.json();
+          }).then(data => {
+            console.log("data from subscribe action: "+data);
+          });
+    
     console.log('A ticker was submitted: ' + this.state.ticker +": BS: "+this.state.brick_size);
     event.preventDefault();
   }
   handleStop(event){
-    this.getStompClient().send("/app/stop_streaming", {}, {});
-    this.setState({streamingStarted: false});
+    //this.getStompClient().send("/app/stop_streaming", {}, {});
+    //this.setState({streamingStarted: false});
+    fetch('http://localhost:8080/unsubscribe?ticker='+this.state.ticker_name)
+          .then(results => {
+            return results.json();
+          }).then(data => {
+            console.log("data from unsub action: "+data);
+          });
+  
     console.log('Stop Streaming pressed');
     event.preventDefault();
   }
@@ -57,6 +96,7 @@ class RealtimeRenkoContainer extends React.Component {
   SocketConnect = () =>{
     if(this.state.connected === true)return;
     let stompClientInstance = this.getStompClient();
+
     stompClientInstance.connect({}, frame => {
       this.setState({connected: true});
       
@@ -75,46 +115,90 @@ class RealtimeRenkoContainer extends React.Component {
         }
     
       });
-});
-stompClientInstance.ws.onclose = () =>{
-  this.setState({connected: false});
-}
+    });
+    stompClientInstance.ws.onclose = () =>{
+      this.setState({connected: false});
+    }
 
-  }
+    fetch('http://localhost:8080/unsubscribe?ticker='+this.state.ticker_name)
+          .then(results => {
+            return results.json();
+          }).then(data => {
+            console.log("data from connect action: "+data);
+    });
+}
 
   render() {
     const {classes} = this.props;
       return(
-      <div className="container-fluid">
-        <div className="row">
-         <div className="col">
-          <form onSubmit={this.handleSubmit}>
-              <label>
-                Ticker:
-                <input disabled={this.state.streamingStarted} id="ticker-input" type="text" value={this.state.ticker || ""} onChange={this.handleTChange} />
-              </label>
-              <label>
-                Brick Size:
-                <input  disabled={this.state.streamingStarted}id="bs-input" type="number" value={this.state.brick_size || 0} onChange={this.handleBSChange} />
-              </label>
-              <input disabled={this.state.streamingStarted} className="btn-primary"  value="Start" onClick={this.handleSubmit}/>
-              <input disabled={!this.state.streamingStarted} className="btn-danger" value="Stop" onClick={this.handleStop}/>
-               <Chip 
-                onClick={this.SocketConnect}
-                className={classes.connectedChip} 
-                label={this.state.connected ? "Connected" : "Connect"} 
-                color={this.state.connected ? "primary" : "default"}
-                avatar={<Avatar><FaceIcon /></Avatar>}//TODO: change avatar based on state
+        <div className={classes.root}>
+          <Grid container direction="row" justify="space-between" alignItems="center" spacing={1}>
+            <Grid item xs={3}>
+            <TextField
+              id="ticker-input"
+              label="Ticker"
+              value={this.state.ticker || ""}
+              className={classes.fullWidth}
+              placeholder="NIFTY_BANK"
+              disabled={this.state.streamingStarted}
+              margin="normal"
+              
+              variant="outlined"
+              onChange={this.handleTChange}
+              InputLabelProps={{
+              shrink: true,
+              }}
+            />
+            </Grid>
+            <Grid item xs={1}>
+              <TextField
+                id="bs-input"
+                label="Brick Size"
+                value={this.state.brick_size || ""}
+                className={classes.fullWidth}
+                placeholder="4"
+                disabled={this.state.streamingStarted}
+                margin="normal"
+                
+                variant="outlined"
+                onChange={this.handleBSChange}
+                InputLabelProps={{
+                shrink: true,
+                }}
               />
-          </form>
-          
-         </div>
+            </Grid>
+            <Grid item xs={2}>
+              <Button variant="contained" color="default" className={classes.button} onClick={this.handleSubmit}>
+                Subscribe
+              </Button>
+            </Grid>
+            <Grid item xs={2}>
+              <Button variant="contained" color="primary" className={classes.button} onClick={this.handleStop}>
+                Unsubscribe
+              </Button>
+            </Grid>
+            <Grid item xs={3}>
+              <Button variant="contained" color="secondary" className={classes.button} onClick={this.handleSubmit}>
+                Disconnect Exchange
+              </Button>
+            </Grid>
+
+            <Grid item xs={1}>
+              <Chip 
+                  onClick={this.SocketConnect}
+                  className={classes.connectedChip} 
+                  label={this.state.connected ? "Connected" : "Connect"} 
+                  color={this.state.connected ? "primary" : "default"}
+                  avatar={<Avatar><FaceIcon /></Avatar>}//TODO: change avatar based on state
+              />
+            </Grid>
+          </Grid>
+          <Grid container spacing={3}>
+            <ChartComponent chartData={this.state.data}/>
+          </Grid>
         </div>
-        <div className="row">
-          <ChartComponent chartData={this.state.data}/>
-        </div>
-      </div>
-      );
+        
+        );
     }
   }
 
