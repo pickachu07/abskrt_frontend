@@ -4,10 +4,12 @@ import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import TextField from '@material-ui/core/TextField';
 import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Button from '@material-ui/core/Button';
 import { Paper } from '@material-ui/core';
 import TransactionTable from './TransactionTable';
 import HistoricalRenkoContainer from './HistoricalRenkoContainer';
+import Switch from '@material-ui/core/Switch';
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
 import Avatar from '@material-ui/core/Avatar';
@@ -16,6 +18,12 @@ import FaceIcon from '@material-ui/icons/Face';
 
 
 const styles = theme => ({
+  root: {
+    flexGrow: 1,
+  },
+  switch:{
+    marginLeft: theme.spacing.unit*2
+  },
   appBarSpacer: theme.mixins.toolbar,
   content: {
     flexGrow: 1,
@@ -28,40 +36,40 @@ const styles = theme => ({
     width: '100%',
     height: '420px'
   },
+  chartContainer: {
+    marginTop:theme.spacing.unit *2,
+    width: '100%',
+    height: '420px'
+  },
   textField: {
-    marginLeft: theme.spacing.unit,
-    marginRight: theme.spacing.unit,
-    width: 500,
+    marginLeft: theme.spacing.unit* 1,
+    marginRight: theme.spacing.unit* 1,
   },
-  brickSizeField: {
-    marginLeft: theme.spacing.unit,
-    marginRight: theme.spacing.unit,
-    width: 200,
+  fullWidth : {
+    marginLeft : theme.spacing.unit*1, 
+    marginRight : theme.spacing.unit*1, 
+    width:'90%'
   },
-  dateField:{
-    marginLeft: theme.spacing.unit,
-    marginRight: theme.spacing.unit,
-    marginTop: theme.spacing.unit*2,
-    width: 200,
+  button: {
+    marginLeft : theme.spacing.unit*3,
+    width:'90%'
   },
   rightIcon: {
     marginLeft: theme.spacing.unit,
   },
-  fetchButton:{
-    marginleft: theme.spacing.unit*2,
-    marginTop: theme.spacing.unit*2,
-  },
   toolbarPaper:{
-      padding: theme.spacing.unit*2,
-      marginLeft: theme.spacing.unit*2,
-
+      paddingLeft: theme.spacing.unit,
+      paddingRight: theme.spacing.unit,
+  },
+  actionContainer:{
+    marginTop:theme.spacing.unit
   }
 });
 
 class HistoricalTab extends React.Component {
   constructor(){
       super()
-      this.state = {brick_size:4,ticker_name:"BANKNIFTY",start_date:"2017-05-24",end_date:"2017-05-29",data:[],trans:[],profit:0};
+      this.state = {brick_size:4,ticker_name:"BANKNIFTY",start_date:"2017-05-24",end_date:"2017-05-29",data:[],trans:[],profit:0,fetch_from_database:false};
       this.handleBSChange = this.handleBSChange.bind(this);
       this.handleDateChange = this.handleDateChange.bind(this);
       this.handleTNChange = this.handleTNChange.bind(this);
@@ -157,79 +165,113 @@ SocketConnect = () =>{
   render() {
     const { classes } = this.props;
     return (
-      <div>
-        <div className={classes.appBarSpacer} />
-        <main className={classes.content}>
-        <Typography variant="h6" gutterBottom component="h6">
+      <main className={classes.content}>
+      <div className={classes.appBarSpacer} />
+      <Typography variant="h6" gutterBottom component="h6">
             Historical Data | Profit: {this.state.profit}
-          </Typography>
-          <Grid container spacing={8}>
-            <Grid item xs={12}>
-                <Paper elevation={1} className={classes.toolbarPaper}>
-                    <TextField
-                        required
-                        id="historical-ticker-name"
-                        label="Ticker"
-                        defaultValue={this.state.ticker_name}
-                        onChange={this.handleTNChange}
-                        className={classes.textField}
-                        margin="normal"
-                    />
-                    <TextField
-                        id="historical-brick-size"
-                        label="Brick size"
-                        value={this.state.brick_size}
-                        onChange={this.handleBSChange}
-                        type="number"
-                        className={classes.brickSizeField}
-                        InputLabelProps={{
-                            shrink: true,
-                        }}
-                        margin="normal"
-                    />
-                    <TextField
-                        id="historical-start-date"
-                        label="Start"
-                        type="date"
-                        defaultValue={this.state.start_date}
-                        onChange={this.handleDateChange}
-                        className={classes.dateField}
-                        InputLabelProps={{
-                        shrink: true,
-                        }}
-                    />
-                    <TextField
-                        id="historical-end-date"
-                        label="Start"
-                        type="date"
-                        defaultValue={this.state.end_date}
-                        onChange={this.handleDateChange}
-                        className={classes.dateField}
-                        InputLabelProps={{
-                        shrink: true,
-                        }}
-                    />
-                    <Button variant="contained" color="default" className={classes.fetchButton} onClick={this.handleSubmit}>
-                        Fetch and Draw
-                        <CloudDownloadIcon className={classes.rightIcon} />
-                    </Button>
-                    <Chip 
-                      onClick={this.SocketConnect}
-                      className={classes.connectedChip} 
-                      label={this.state.connected ? "Connected" : "Connect"} 
-                      color={this.state.connected ? "primary" : "default"}
-                      avatar={<Avatar><FaceIcon /></Avatar>}//TODO: change avatar based on state
-                    />
-                </Paper>
+      </Typography>
+      <div className={classes.root}>
+      <Paper elevation={1} className={classes.toolbarPaper}>
+        <Grid container direction="row" justify="space-between" alignItems="center" spacing={1}>
+            <Grid item xs={2}>
+            <TextField
+              required
+              id="historical-ticker-name"
+              label="Ticker"
+              margin="normal"
+              placeholder="NIFTY_BANK"
+              className={classes.fullWidth}
+              value={this.state.ticker_name || ""}
+              onChange={this.handleTNChange}
+              margin="normal"
+              variant="outlined"
+              InputLabelProps={{
+                shrink: true,
+              }}
+            />
             </Grid>
-            <Grid item xs={12}>
-                <Paper className={classes.toolbarPaper}>
-                    <HistoricalRenkoContainer data={this.state.data}/>
-                </Paper>
+            <Grid item xs={1}>
+              <TextField
+                id="bs-input"
+                label="Brick Size"
+                value={this.state.brick_size || ""}
+                className={classes.fullWidth}
+                placeholder="4"
+                disabled={this.state.streamingStarted}
+                margin="normal"
+                variant="outlined"
+                onChange={this.handleBSChange}
+                InputLabelProps={{
+                shrink: true,
+                }}
+              />
             </Grid>
-          </Grid>
-          {this.state.data.length>2 && 
-          <div>
+            <Grid item xs={2}>
+            <TextField
+              id="historical-start-date"
+              label="Start"
+              type="date"
+              placeholder="2019-01-05"
+              className={classes.fullWidth}
+              defaultValue={this.state.end_date}
+              onChange={this.handleDateChange}
+              margin="normal"
+              variant="outlined"
+              InputLabelProps={{
+              shrink: true,
+              }}
+            />
+            </Grid>
+            <Grid item xs={1}>
+              <Button variant="contained" color="primary" className={classes.button} onClick={this.handleExchangeDisconnect}>
+                Draw
+              </Button>
+            </Grid>
+            <Grid item xs={1}>
+              <Button variant="contained" color="primary" className={classes.button} onClick={this.handleExchangeDisconnect}>
+                Play
+              </Button>
+            </Grid>
+            <Grid item xs={1}>
+              <Button variant="contained" color="primary" className={classes.button} onClick={this.handleExchangeDisconnect}>
+                pause
+              </Button>
+            </Grid>
+            <Grid item xs={1}>
+              <Button variant="contained" color="primary" className={classes.button} onClick={this.handleExchangeDisconnect}>
+                Stop
+              </Button>
+            </Grid>
+            <Grid item xs={1}>
+            <FormControlLabel className={classes.switch}
+              control={
+            <Switch
+              checked={this.state.fetch_from_database}
+              onChange={this.switchDataSource}
+              value="true"
+              color="primary"
+            />}
+            label="DB"
+            />
+            </Grid>
+            <Grid item xs={1}>
+              <Chip 
+                onClick={this.SocketConnect}
+                className={classes.connectedChip} 
+                label={this.state.connected ? "Connected" : "Connect"} 
+                color={this.state.connected ? "primary" : "default"}
+                avatar={<Avatar><FaceIcon /></Avatar>}//TODO: change avatar based on state
+            />
+            </Grid>
+        </Grid>
+        </Paper>
+        <Grid container direction="row" justify="space-between" alignItems="center" spacing={1}>
+          <Paper className={classes.chartContainer}>
+            <HistoricalRenkoContainer data={this.state.data}/>
+          </Paper>
+        </Grid>
+        {this.state.data.length>2 && 
+          <div className={classes.actionContainer}>
           <Typography variant="h6" gutterBottom component="h6">
             Actions
           </Typography>
@@ -237,8 +279,8 @@ SocketConnect = () =>{
             <TransactionTable data={this.state.trans}/>
           </div>
           </div>}
-        </main>
-      </div>
+      </div> 
+      </main>
     )
   }
 }

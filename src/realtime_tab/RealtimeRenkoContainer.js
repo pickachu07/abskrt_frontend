@@ -48,6 +48,7 @@ class RealtimeRenkoContainer extends React.Component {
     this.stompClient = null;
     this.getStompClient = this.getStompClient.bind(this);
     this.SocketConnect = this.SocketConnect.bind(this);
+    this.handleExchangeDisconnect = this.handleExchangeDisconnect.bind(this);
   }
 
   handleTChange(event) {
@@ -83,6 +84,17 @@ class RealtimeRenkoContainer extends React.Component {
   
     console.log('Stop Streaming pressed');
     event.preventDefault();
+  }
+
+  handleExchangeDisconnect = () =>{
+    fetch('http://localhost:8080/disconnect')
+          .then(results => {
+            return results.json();
+          }).then(data => {
+            console.log("data from disconnect action: "+data);
+          });
+  
+    console.log('Disconnect from Exchange pressed');
   }
 
   getStompClient = () =>{
@@ -132,7 +144,7 @@ class RealtimeRenkoContainer extends React.Component {
     const {classes} = this.props;
       return(
         <div className={classes.root}>
-          <Grid container direction="row" justify="space-between" alignItems="center" spacing={1}>
+          <Grid container direction="row" justify="space-between" alignItems="center" spacing={4}>
             <Grid item xs={3}>
             <TextField
               id="ticker-input"
@@ -178,7 +190,7 @@ class RealtimeRenkoContainer extends React.Component {
               </Button>
             </Grid>
             <Grid item xs={3}>
-              <Button variant="contained" color="secondary" className={classes.button} onClick={this.handleSubmit}>
+              <Button variant="contained" color="secondary" className={classes.button} onClick={this.handleExchangeDisconnect}>
                 Disconnect Exchange
               </Button>
             </Grid>
