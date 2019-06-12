@@ -69,7 +69,7 @@ const styles = theme => ({
 class HistoricalTab extends React.Component {
   constructor(){
       super()
-      this.state = {brick_size:4,ticker_name:"BANKNIFTY",start_date:"2017-05-24",end_date:"2017-05-29",data:[],trans:[],profit:0,fetch_from_database:false};
+      this.state = {brick_size:4,ticker_name:"BANKNIFTY",date:"2019-05-27",data:[],trans:[],profit:0,fetch_from_database:true};
       this.handleBSChange = this.handleBSChange.bind(this);
       this.handleDateChange = this.handleDateChange.bind(this);
       this.handleTNChange = this.handleTNChange.bind(this);
@@ -77,8 +77,39 @@ class HistoricalTab extends React.Component {
       this.getStompClient = this.getStompClient.bind(this);
       this.SocketConnect = this.SocketConnect.bind(this);
       this.handleSubmit = this.handleSubmit.bind(this);
+      this.switchDataSource = this.switchDataSource.bind(this);
   }
 
+  switchDataSource = () =>{
+    if(this.state.fetch_from_database === false){
+      this.setState({fetch_from_database : true});
+    }else{
+      this.setState({fetch_from_database : false});
+    }
+  }
+
+  draw = (event) => {
+    if(this.state.fetch_from_database === true){
+      fetch('http://localhost:8080/tickers/'+this.state.date)
+          .then(res => res.json())
+          .then(ndata => {
+            console.log("data from subscribe action: "+ndata.length);
+            for(var i=0;i<ndata.length;i++){
+              //console.log("****nDataBody:"+JSON.parse(ndata.body)[i].data);
+              var nd =new Date(ndata[i].data.timestamp)
+              var op = ndata[i].data.open;
+              var hi = ndata[i].data.high;
+              var lo = ndata[i].data.low;
+              var cl = ndata[i].data.close;
+              var vol = ndata[i].data.volume;
+              var newBrick = {date: nd, open: op, high: hi, low: lo, close: cl, volume : vol};
+              this.setState({data : [...this.state.data, newBrick]});
+              //bricks.push(newBrick);
+            }
+          });
+    }
+    event.preventDefault();
+  }
   getStompClient = () =>{
     if(this.stompClient== null){
       let socket = new SockJS("http://localhost:8080/gs-guide-websocket");
@@ -151,16 +182,11 @@ SocketConnect = () =>{
   }
 
   handleDateChange = (event) =>{
-    if(event.target.id == "historical-start-date"){
-        console.log("Start date changed");
-        this.setState({start_date: event.target.value});
-    }else if(event.target.id == "historical-end-date"){
-        console.log("End date changed");
-        this.setState({end_date: event.target.value});
+    if(event.target.id == "historical-date"){
+        console.log("Historical date changed"+this.state.date);
+        this.setState({date: event.target.value});
     }
   }
-
-  
 
   render() {
     const { classes } = this.props;
@@ -172,7 +198,7 @@ SocketConnect = () =>{
       </Typography>
       <div className={classes.root}>
       <Paper elevation={1} className={classes.toolbarPaper}>
-        <Grid container direction="row" justify="space-between" alignItems="center" spacing={1}>
+        <Grid container direction="row" justify="space-between" alignItems="center" spacing={0}>
             <Grid item xs={2}>
             <TextField
               required
@@ -208,12 +234,12 @@ SocketConnect = () =>{
             </Grid>
             <Grid item xs={2}>
             <TextField
-              id="historical-start-date"
+              id="historical-date"
               label="Start"
               type="date"
               placeholder="2019-01-05"
               className={classes.fullWidth}
-              defaultValue={this.state.end_date}
+              defaultValue={this.state.date}
               onChange={this.handleDateChange}
               margin="normal"
               variant="outlined"
@@ -223,7 +249,7 @@ SocketConnect = () =>{
             />
             </Grid>
             <Grid item xs={1}>
-              <Button variant="contained" color="primary" className={classes.button} onClick={this.handleExchangeDisconnect}>
+              <Button variant="contained" color="default" className={classes.button} onClick={this.draw}>
                 Draw
               </Button>
             </Grid>
@@ -233,12 +259,12 @@ SocketConnect = () =>{
               </Button>
             </Grid>
             <Grid item xs={1}>
-              <Button variant="contained" color="primary" className={classes.button} onClick={this.handleExchangeDisconnect}>
+              <Button variant="contained" color="default" className={classes.button} onClick={this.handleExchangeDisconnect}>
                 pause
               </Button>
             </Grid>
             <Grid item xs={1}>
-              <Button variant="contained" color="primary" className={classes.button} onClick={this.handleExchangeDisconnect}>
+              <Button variant="contained" color="secondary" className={classes.button} onClick={this.handleExchangeDisconnect}>
                 Stop
               </Button>
             </Grid>
@@ -265,7 +291,7 @@ SocketConnect = () =>{
             </Grid>
         </Grid>
         </Paper>
-        <Grid container direction="row" justify="space-between" alignItems="center" spacing={1}>
+        <Grid container direction="row" justify="space-between" alignItems="center" spacing={0}>
           <Paper className={classes.chartContainer}>
             <HistoricalRenkoContainer data={this.state.data}/>
           </Paper>
