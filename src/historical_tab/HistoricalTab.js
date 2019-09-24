@@ -69,15 +69,16 @@ const styles = theme => ({
 class HistoricalTab extends React.Component {
   constructor(){
       super()
-      this.state = {brick_size:4,ticker_name:"BANKNIFTY",date:"2019-05-27",data:[],trans:[],profit:0,fetch_from_database:true};
+      this.state = {brick_size:4,ticker_name:"BANKNIFTY",date:"2019-05-27",data:[],tickData:[],trans:[],profit:0,fetch_from_database:true};
       this.handleBSChange = this.handleBSChange.bind(this);
+      this.handlePlay = this.handlePlay.bind(this);
       this.handleDateChange = this.handleDateChange.bind(this);
       this.handleTNChange = this.handleTNChange.bind(this);
       this.stompClient = null;
       this.getStompClient = this.getStompClient.bind(this);
       this.SocketConnect = this.SocketConnect.bind(this);
-      this.handleSubmit = this.handleSubmit.bind(this);
       this.switchDataSource = this.switchDataSource.bind(this);
+      this.handleStop = this.handleStop.bind(this);
   }
 
   switchDataSource = () =>{
@@ -90,7 +91,8 @@ class HistoricalTab extends React.Component {
 
   draw = (event) => {
     if(this.state.fetch_from_database === true){
-      fetch('http://localhost:8080/tickers/'+this.state.date)
+      this.setState({data:[]});
+      fetch('http://localhost:8080/historical/'+this.state.date+'/'+this.state.brick_size)
           .then(res => res.json())
           .then(ndata => {
             console.log("data from subscribe action: "+ndata.length);
@@ -131,6 +133,12 @@ SocketConnect = () =>{
       });
 
 
+      stompClientInstance.subscribe('/topic/notification_stream', ndata => {
+        let notification = JSON.parse(ndata.body);
+        console.log("Notification Received: "+notification.message);
+      });
+
+
       stompClientInstance.subscribe('/topic/historical_trans_stream', transactions => {
         let results = JSON.parse(transactions.body);
         let output = [];  
@@ -143,11 +151,29 @@ SocketConnect = () =>{
         console.log("trans:"+this.state.trans);
       });
 
+      stompClientInstance.subscribe('/topic/historical_ohlc_stream', ndata => {
+        var bricks = [];
+        //this.setState({data : []});//reset data
+        //for(var i=0;i<JSON.parse(ndata.body).length;i++){
+         // console.log("****nDataBody:"+JSON.parse(ndata.body)[i].data);
+          var nd =new Date(JSON.parse(ndata.body).data.timestamp)
+          var op = JSON.parse(ndata.body).data.open;
+          var hi = JSON.parse(ndata.body).data.high;
+          var lo = JSON.parse(ndata.body).data.low;
+          var cl = JSON.parse(ndata.body).data.close;
+          var vol = JSON.parse(ndata.body).data.volume;
+          var newBrick = {date: nd, open: op, high: hi, low: lo, close: cl, volume : vol};
+          this.setState({tickData : [...this.state.tickData, newBrick]});
+          //bricks.push(newBrick);
+        //}
+        //console.log("****stateData:"+this.state.data);
+      });
 
       stompClientInstance.subscribe('/topic/historical_data_stream', ndata => {
         var bricks = [];
+        //this.setState({data : []});//reset data
         for(var i=0;i<JSON.parse(ndata.body).length;i++){
-          //console.log("****nDataBody:"+JSON.parse(ndata.body)[i].data);
+          console.log("****nDataBody:"+JSON.parse(ndata.body)[i].data);
           var nd =new Date(JSON.parse(ndata.body)[i].data.timestamp)
           var op = JSON.parse(ndata.body)[i].data.open;
           var hi = JSON.parse(ndata.body)[i].data.high;
@@ -163,9 +189,16 @@ SocketConnect = () =>{
 });
 }
 
+  handleStop(event){
+    this.getStompClient().send("/app/StopHistoricalDataStream",{},{});
+    this.setState({streamingStarted: false});
+    console.log('Historical Tab: Streaming stopped!');
+    event.preventDefault();
+  }
 
-  handleSubmit(event) {
-    this.getStompClient().send("/app/StartHistoricalDataStream", {}, JSON.stringify({'brick_size' : this.state.brick_size,'ticker_name': this.state.ticker_name}))
+  handlePlay(event) {
+    this.setState({data : []});//reset data
+    this.getStompClient().send("/app/StartHistoricalDataStream", {}, JSON.stringify({'brick_size' : this.state.brick_size,'ticker_name': this.state.ticker_name,'date':this.state.date}))
     this.setState({streamingStarted: true});
     console.log('Historical Tab: A ticker was submitted: ' + this.state.ticker +": BS: "+this.state.brick_size);
     event.preventDefault();
@@ -254,7 +287,7 @@ SocketConnect = () =>{
               </Button>
             </Grid>
             <Grid item xs={1}>
-              <Button variant="contained" color="primary" className={classes.button} onClick={this.handleExchangeDisconnect}>
+              <Button variant="contained" color="primary" className={classes.button} onClick={this.handlePlay}>
                 Play
               </Button>
             </Grid>
@@ -264,7 +297,7 @@ SocketConnect = () =>{
               </Button>
             </Grid>
             <Grid item xs={1}>
-              <Button variant="contained" color="secondary" className={classes.button} onClick={this.handleExchangeDisconnect}>
+              <Button variant="contained" color="secondary" className={classes.button} onClick={this.handleStop}>
                 Stop
               </Button>
             </Grid>
@@ -294,6 +327,11 @@ SocketConnect = () =>{
         <Grid container direction="row" justify="space-between" alignItems="center" spacing={0}>
           <Paper className={classes.chartContainer}>
             <HistoricalRenkoContainer data={this.state.data}/>
+          </Paper>
+        </Grid>
+        <Grid container direction="row" justify="space-between" alignItems="center" spacing={0}>
+          <Paper className={classes.chartContainer}>
+            <HistoricalRenkoContainer data={this.state.tickData}/>
           </Paper>
         </Grid>
         {this.state.data.length>2 && 
