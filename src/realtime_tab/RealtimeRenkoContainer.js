@@ -62,7 +62,7 @@ class RealtimeRenkoContainer extends React.Component {
   handleSubmit(event) {
     //this.getStompClient().send("/app/start_streaming", {}, JSON.stringify({'brick_size' : this.state.brick_size,'ticker_name': this.state.ticker}))
     //this.setState({streamingStarted: true});
-    fetch('http://localhost:8080/subscribe?ticker='+this.state.ticker_name+'&brick_size='+this.state.brick_size)
+    fetch('http://localhost:8080/subscribe/'+this.state.ticker+'/'+this.state.brick_size)
           .then(results => {
             return results.json();
           }).then(data => {
@@ -112,8 +112,16 @@ class RealtimeRenkoContainer extends React.Component {
     stompClientInstance.connect({}, frame => {
       this.setState({connected: true});
       
+      fetch('http://localhost:8080/connect')
+      .then(results => {
+        return results.json();
+      }).then(data => {
+        console.log("data from connect action: "+data);
+});
+
+
       stompClientInstance.subscribe('/topic/ticker_stream', ndata => {
-        
+        //this.setState({data : []});//reset data
         if(this.state.data!=null){
           var nd =new Date(JSON.parse(ndata.body).data.timestamp)
           var op = JSON.parse(ndata.body).data.open;
