@@ -26,7 +26,7 @@ export default class ChartComponent extends React.Component {
 		
 		if (this.state == null) {
 			return <div>Loading...</div>
-		}else if(this.state.data.length <= 3){
+		}else if(this.state.data.length <= 2){
 			return <div>Not enough data...</div>
 		}
 		return (
