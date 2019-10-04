@@ -78,12 +78,12 @@ class RealtimeTab extends React.Component {
           </Paper>
         </div>
         }
-          <Typography variant="h6" gutterBottom component="h6">
+          {/* <Typography variant="h6" gutterBottom component="h6">
             Actions
           </Typography>
           <div className={classes.tableContainer}>
             <SimpleTable />
-          </div>
+          </div> */}
         </main>
       </div>
     )}
