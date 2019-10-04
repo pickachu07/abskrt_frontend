@@ -39,10 +39,11 @@ class RealtimeRenkoContainer extends React.Component {
   
   constructor(){
     super();
-    this.state = {ticker: 'NIFTY_BANK', brick_size : 4, streamingStarted : false,connected:false,data:[]};
+    this.state = {ticker: 'NIFTY_BANK', brick_size : 4,timeframe:1, streamingStarted : false,connected:false,data:[]};
 
     this.handleTChange = this.handleTChange.bind(this);
     this.handleBSChange = this.handleBSChange.bind(this);
+    this.handleTFChange = this.handleTFChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleStop = this.handleStop.bind(this);
     this.stompClient = null;
@@ -59,10 +60,14 @@ class RealtimeRenkoContainer extends React.Component {
     this.setState({brick_size: event.target.value});
   }
 
+  handleTFChange(event) {
+    this.setState({timeframe: event.target.value});
+  }
+
   handleSubmit(event) {
     //this.getStompClient().send("/app/start_streaming", {}, JSON.stringify({'brick_size' : this.state.brick_size,'ticker_name': this.state.ticker}))
     //this.setState({streamingStarted: true});
-    fetch('http://localhost:8080/subscribe/'+this.state.ticker+'/'+this.state.brick_size)
+    fetch('http://localhost:8080/subscribe/'+this.state.ticker+'/'+this.state.brick_size+'/'+this.state.timeframe)
           .then(results => {
             return results.json();
           }).then(data => {
@@ -84,6 +89,16 @@ class RealtimeRenkoContainer extends React.Component {
   
     console.log('Stop Streaming pressed');
     event.preventDefault();
+  }
+  handleExchangeConnect = () =>{
+    fetch('http://localhost:8080/connect')
+    .then(results => {
+      return results.json();
+    }).then(data => {
+      console.log("data from connect action: "+data);
+    });
+  
+    console.log('Disconnect from Exchange pressed');
   }
 
   handleExchangeDisconnect = () =>{
@@ -111,14 +126,6 @@ class RealtimeRenkoContainer extends React.Component {
 
     stompClientInstance.connect({}, frame => {
       this.setState({connected: true});
-      
-      fetch('http://localhost:8080/connect')
-      .then(results => {
-        return results.json();
-      }).then(data => {
-        console.log("data from connect action: "+data);
-});
-
 
       stompClientInstance.subscribe('/topic/ticker_stream', ndata => {
         //this.setState({data : []});//reset data
@@ -153,7 +160,7 @@ class RealtimeRenkoContainer extends React.Component {
       return(
         <div className={classes.root}>
           <Grid container direction="row" justify="space-between" alignItems="center" spacing={4}>
-            <Grid item xs={3}>
+            <Grid item xs={2}>
             <TextField
               id="ticker-input"
               label="Ticker"
@@ -187,19 +194,41 @@ class RealtimeRenkoContainer extends React.Component {
                 }}
               />
             </Grid>
-            <Grid item xs={2}>
+            <Grid item xs={1}>
+              <TextField
+                id="tf-input"
+                label="Timeframe(Ticks)"
+                value={this.state.timeframe || ""}
+                className={classes.fullWidth}
+                placeholder="1"
+                disabled={this.state.streamingStarted}
+                margin="normal"
+                
+                variant="outlined"
+                onChange={this.handleTFChange}
+                InputLabelProps={{
+                shrink: true,
+                }}
+              />
+            </Grid>
+            <Grid item xs={1}>
               <Button variant="contained" color="default" className={classes.button} onClick={this.handleSubmit}>
                 Subscribe
               </Button>
             </Grid>
-            <Grid item xs={2}>
+            <Grid item xs={1}>
               <Button variant="contained" color="primary" className={classes.button} onClick={this.handleStop}>
                 Unsubscribe
               </Button>
             </Grid>
-            <Grid item xs={3}>
+            <Grid item xs={2}>
               <Button variant="contained" color="secondary" className={classes.button} onClick={this.handleExchangeDisconnect}>
                 Disconnect Exchange
+              </Button>
+            </Grid>
+            <Grid item xs={2}>
+              <Button variant="contained" color="default" className={classes.button} onClick={this.handleExchangeConnect}>
+                Connect Exchange
               </Button>
             </Grid>
 
