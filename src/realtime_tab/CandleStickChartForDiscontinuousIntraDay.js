@@ -39,7 +39,7 @@ class CandleStickChartForDiscontinuousIntraDay extends React.Component {
 		} = xScaleProvider(initialData);
 
 		//
-		const height = 400;
+		const height = 700;
 		//const width = 800;
 
 		var margin = {left: 70, right: 70, top:20, bottom: 30};
