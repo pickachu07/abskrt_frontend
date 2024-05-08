@@ -1,22 +1,23 @@
 
+
 # ABSK RealTime
 
 Custom Algo trading system which do not suffer from Graph repainting and does realtime and paper trading on Indian Stock Engine based on Renko charts.
 
 This repo is the frontend repo of the system. For the backend see - [ABSKRT Backend repo](https://github.com/pickachu07/abskrt_backend)
 
-## Run Locally
+# Run Locally
 
 Clone the project
 
 ```bash
-  git clone https://link-to-project
+  git clone https://github.com/pickachu07/abskrt_frontend.git
 ```
 
 Go to the project directory
 
 ```bash
-  cd my-project
+  cd abskrt_frontend
 ```
 
 Install dependencies
@@ -32,7 +33,17 @@ Start the server
 ```
 
 
+
+
+
 ## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
+
+
+## Tech Stack
+
+**Client:** React, MUI, Websockets
+
+**Server:** springboot, Hibernate, MongoDB
 
