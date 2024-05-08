@@ -1,6 +1,6 @@
 
 
-# ABSK RealTime
+# ABSK RealTime Trader
 
 Custom Algo trading system which do not suffer from Graph repainting and does realtime and paper trading on Indian Stock Engine based on Renko charts.
 
